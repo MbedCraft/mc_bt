@@ -1,0 +1,13 @@
+menu "MbedCraft Bluetooth configuration"
+
+    depends on BT_ENABLED
+
+    config MC_BT_A2DP_ENABLED
+        depends on BT_A2DP_ENABLE
+        bool "A2DP module"
+        default y
+        help
+            If enabled, A2DP profile can be managed by the
+            MbedCraft Bluetooth component
+
+endmenu
