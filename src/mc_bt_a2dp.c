@@ -12,6 +12,11 @@
 /* ------------------------------------------------------------------------- *\
  * Private variable definitions
  * ------------------------------------------------------------------------- */
+static mc_bt_a2dp_connection_cb_t __connection_cb = NULL;
+
+/* ------------------------------------------------------------------------- *\
+ * Private variable definitions
+ * ------------------------------------------------------------------------- */
 static const char *s_a2d_conn_state_str[] = {
     "Disconnected",
     "Connecting",
@@ -43,6 +48,10 @@ mc_bt_err_t mc_bt_a2dp_init(void) {
    return MC_BT_OK;
 }
 
+void mc_bt_a2dp_register_connection_cb(mc_bt_a2dp_connection_cb_t callback) {
+    __connection_cb = callback;
+}
+
 void mc_bt_a2dp_register_configuration_cb(mc_bt_a2dp_config_cb_t callback) {
     __config_cb = callback;
 }
@@ -63,8 +72,14 @@ static void __a2dp_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
             ESP_LOGI(__func__, "A2DP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                     s_a2d_conn_state_str[param->conn_stat.state], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
             if (param->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
+                if (NULL != __connection_cb) {
+                    __connection_cb(false);
+                }
                 esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
             } else if (param->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED){
+                if (NULL != __connection_cb) {
+                    __connection_cb(true);
+                }
                 esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
             }
             break;
